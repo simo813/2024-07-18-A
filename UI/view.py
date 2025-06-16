@@ -5,6 +5,7 @@ class View(ft.UserControl):
     def __init__(self, page: ft.Page):
         super().__init__()
         # page stuff
+
         self._page = page
         self._page.title = "TdP 2024 - Esame del 18/07/2024 - A"
         self._page.horizontal_alignment = 'CENTER'
@@ -18,7 +19,9 @@ class View(ft.UserControl):
         self._title = None
         # first row
         self.dd_min_ch: ft.Dropdown = None
+        self.dd_min_chValue = None
         self.dd_max_ch: ft.Dropdown = None
+        self.dd_max_chValue = None
         self.dd_localization: ft.Dropdown = None
         self.btn_graph: ft.ElevatedButton = None
         self.btn_dettagli: ft.ElevatedButton = None
@@ -34,10 +37,10 @@ class View(ft.UserControl):
 
         # First row with some controls
         self.dd_min_ch = ft.Dropdown(label="Cromosoma min",
-                               hint_text="Selezionare il valore minimo di cromosoma.", width=200)
+                               hint_text="Selezionare il valore minimo di cromosoma.", width=200, on_change = self.on_dd_min_ch_change)
 
         self.dd_max_ch = ft.Dropdown(label="Cromosoma max",
-                               hint_text="Selezionare il valore massimo di cromosoma.", width=200)
+                               hint_text="Selezionare il valore massimo di cromosoma.", width=200, on_change = self.on_dd_max_ch_change)
 
         self.btn_graph = ft.ElevatedButton(text="Crea Grafo",
                                            tooltip="Crea il grafo",
@@ -57,6 +60,7 @@ class View(ft.UserControl):
         row1 = ft.Row([self.dd_min_ch, self.dd_max_ch, self.btn_graph, self.dd_localization,
                        self.btn_dettagli, self.btn_path],
                       alignment=ft.MainAxisAlignment.SPACE_EVENLY)
+        self.controller.fillDD()
         self._page.controls.append(row1)
 
         # List View where the reply is printed
@@ -108,6 +112,14 @@ class View(ft.UserControl):
         self._page.dialog = dlg
         dlg.open = True
         self._page.update()
+
+    def on_dd_min_ch_change(self, e):
+        self.dd_min_chValue = self.dd_min_ch.value
+        self.update_page()
+
+    def on_dd_max_ch_change(self, e):
+        self.dd_max_chValue = self.dd_max_ch.value
+        self.update_page()
 
     def update_page(self):
         self._page.update()

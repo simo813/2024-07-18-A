@@ -42,3 +42,68 @@ class DAO():
             cursor.close()
             cnx.close()
         return result
+
+    @staticmethod
+    def get_all_chromosoma():
+        cnx = DBConnect.get_connection()
+        result = []
+        if cnx is None:
+            print("Connessione fallita")
+        else:
+            cursor = cnx.cursor(dictionary=True)
+            query = """select distinct (g.Chromosome) as chromosome
+                        from genes_small.genes g """
+            cursor.execute(query)
+
+            for row in cursor:
+                result.append(row["chromosome"])
+
+            cursor.close()
+            cnx.close()
+        return result
+
+    @staticmethod
+    def getNodes(minChromosome, maxChromosome):
+        cnx = DBConnect.get_connection()
+        result = []
+        if cnx is None:
+            print("Connessione fallita")
+        else:
+            cursor = cnx.cursor(dictionary=True)
+            query = """select distinct (g.GeneID), g.`Function` , g.Essential , g.Chromosome 
+                        from genes_small.genes g 
+                        where g.Chromosome >= %s and g.Chromosome <= %s """
+            cursor.execute(query, (minChromosome, maxChromosome))
+
+            for row in cursor:
+                result.append(Gene(**row))
+
+            cursor.close()
+            cnx.close()
+        return result
+
+    @staticmethod
+    def getEdges(minChromosome, maxChromosome):
+        cnx = DBConnect.get_connection()
+        result = []
+        if cnx is None:
+            print("Connessione fallita")
+        else:
+            cursor = cnx.cursor(dictionary=True)
+            cursor.execute("""select g.GeneID, g2.GeneID, i.Expression_Corr 
+                        from genes_small.interactions i, genes_small.genes g, genes_small.classification c, genes_small.genes g2, genes_small.classification c2
+                        where 	    g.Chromosome >= %(minChromosome)s and g.Chromosome <= %(maxChromosome)s
+                                and g2.Chromosome >= %(minChromosome)s and g2.Chromosome <= %(maxChromosome)s
+                                and c.GeneID = g.GeneID
+                                and c2.GeneID = g2.GeneID
+                                and c.Localization = c2.Localization 
+                                and i.GeneID1 = g.GeneID
+                                and i.GeneID2 = g2.GeneID
+                        group by g.GeneID, g2.GeneID, i.Expression_Corr  """, (minChromosome, maxChromosome))
+
+            for row in cursor:
+                result.append(**row)
+
+            cursor.close()
+            cnx.close()
+        return result
